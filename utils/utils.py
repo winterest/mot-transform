@@ -1,7 +1,6 @@
 import glob
 import random
 import os
-import os.path as osp
 
 import cv2
 import matplotlib.pyplot as plt

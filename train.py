@@ -3,12 +3,15 @@ import json
 import time
 from time import gmtime, strftime
 import test
-from models import *
+import torch
+from models import Darknet, load_darknet_weights
 from shutil import copyfile
 from utils.datasets import JointDataset, collate_fn
-from utils.utils import *
+from utils.utils import mkdir_if_missing, init_seeds
 from utils.log import logger
 from torchvision.transforms import transforms as T
+import os.path as osp
+from collections import defaultdict
 
 
 def train(
@@ -33,6 +36,7 @@ def train(
     timme = timme.replace(':', '_')
     weights_to = osp.join(weights_to, 'run' + timme)
     mkdir_if_missing(weights_to)
+    mkdir_if_missing(weights_to + '/cfg/')
     if resume:
         latest_resume = osp.join(weights_from, 'latest.pt')
 
@@ -168,12 +172,14 @@ def train(
             torch.save(checkpoint, osp.join(weights_to, "weights_epoch_" + str(epoch) + ".pt"))
 
         # Calculate mAP
+        '''
         if epoch % opt.test_interval == 0:
             with torch.no_grad():
                 mAP, R, P = test.test(cfg, data_cfg, weights=latest, batch_size=batch_size, img_size=img_size,
                                       print_interval=40, nID=dataset.nID)
                 test.test_emb(cfg, data_cfg, weights=latest, batch_size=batch_size, img_size=img_size,
                               print_interval=40, nID=dataset.nID)
+        '''
 
         # Call scheduler.step() after opimizer.step() with pytorch > 1.1.0
         scheduler.step()
@@ -182,9 +188,9 @@ def train(
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', type=int, default=30, help='number of epochs')
-    parser.add_argument('--batch-size', type=int, default=32, help='size of each image batch')
+    parser.add_argument('--batch-size', type=int, default=8, help='size of each image batch')
     parser.add_argument('--accumulated-batches', type=int, default=1, help='number of batches before optimizer step')
-    parser.add_argument('--cfg', type=str, default='cfg/yolov3.cfg', help='cfg file path')
+    parser.add_argument('--cfg', type=str, default='cfg/yolov3_576x320.cfg', help='cfg file path')
     parser.add_argument('--weights-from', type=str, default='weights/',
                         help='Path for getting the trained model for resuming training (Should only be used with '
                              '--resume)')
@@ -194,7 +200,7 @@ if __name__ == '__main__':
     parser.add_argument('--save-model-after', type=int, default=10,
                         help='Save a checkpoint of model at given interval of epochs')
     parser.add_argument('--data-cfg', type=str, default='cfg/ccmcpe.json', help='coco.data file path')
-    parser.add_argument('--img-size', type=int, default=[1088, 608], nargs='+', help='pixels')
+    parser.add_argument('--img-size', type=int, default=[576, 320], nargs='+', help='pixels')
     parser.add_argument('--resume', action='store_true', help='resume training flag')
     parser.add_argument('--print-interval', type=int, default=40, help='print interval')
     parser.add_argument('--test-interval', type=int, default=9, help='test interval')
