@@ -116,7 +116,10 @@ def train(
 
         ui = -1
         rloss = defaultdict(float)  # running loss
+
+        ## training schedule
         optimizer.zero_grad()
+
         for i, (imgs, targets, _, _, targets_len) in enumerate(dataloader):
             if sum([len(x) for x in targets]) < 1:  # if no targets continue
                 continue

@@ -225,7 +225,12 @@ class Darknet(nn.Module):
         self.img_size = [int(self.module_defs[0]['width']), int(self.module_defs[0]['height'])]
         self.emb_dim = int(self.module_defs[0]['embedding_dim'])
         self.hyperparams, self.module_list = create_modules(self.module_defs)
-        self.loss_names = ['loss', 'box', 'conf', 'id', 'nT']
+        self.loss_names = ['loss', 'box', 'conf', 'id', 'nT']  
+        ## loss:
+        ## box:
+        ## conf:
+        ## id:
+        ## nT:
         self.losses = OrderedDict()
         for ln in self.loss_names:
             self.losses[ln] = 0
@@ -275,6 +280,7 @@ class Darknet(nn.Module):
         if is_training:
             self.losses['nT'] /= 3 
             output = [o.squeeze() for o in output]
+            ## training loss, components
             return sum(output), torch.Tensor(list(self.losses.values())).cuda()
         elif self.test_emb:
             return torch.cat(output, 0)
