@@ -5,6 +5,26 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: train.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/train.py",
+            "console": "integratedTerminal",
+            "env": { "CUDA_VISIBLE_DEVICES": "0"},
+            "args": ["--batch-size", "1"]
+        },
+
+        {
+            "name": "Python: train single yolo layer",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/train.py",
+            "console": "integratedTerminal",
+            "env": { "CUDA_VISIBLE_DEVICES": "0"},
+            "args": ["--batch-size", "1", "--cfg", "cfg/yolov3_576x320.single.cfg"]
+        },
+
+        {
             "name": "Python: Current File",
             "type": "python",
             "request": "launch",

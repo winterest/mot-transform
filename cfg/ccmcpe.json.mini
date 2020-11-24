@@ -2,7 +2,7 @@
     "root":"/mounted/mnt-gluster/data/xliuu/mot_data/",
     "train":
     {
-        "mot17":"./data/mot17.train"
+        "mot17.mini":"./data/mot17.mini.train"
     },
     "test_emb":
     {

@@ -241,7 +241,10 @@ def create_grids(self, img_size, nGh, nGw):
     self.grid_xy = torch.stack((grid_x, grid_y), 4)
 
     # build wh gains
-    self.anchor_vec = self.anchors / self.stride
+    self.anchor_vec = self.anchors / self.stride  
+    ### example: 85,255, 120,360, 170,420, 340, 320 // 32 = 
+    ### [ 2.6562,  7.9688], [ 3.7500, 11.2500],
+    ### [ 5.3125, 13.1250], [10.6250, 10.0000]
     self.anchor_wh = self.anchor_vec.view(1, self.nA, 1, 1, 2)
 
 
@@ -421,7 +424,10 @@ class DETRdemo(nn.Module):
     Only batch size 1 supported.
     """
     def __init__(self, num_classes, hidden_dim=256, nheads=8,
-                 num_encoder_layers=6, num_decoder_layers=6):
+                 num_encoder_layers=6, num_decoder_layers=6, row_qr=23, col_qr=23):
+        ####
+        ## row_qr, col_qr >= H, W after layer 4 (~ h,w//32)
+        ####
         super().__init__()
 
         # create ResNet-50 backbone
@@ -441,12 +447,12 @@ class DETRdemo(nn.Module):
         self.linear_bbox = nn.Linear(hidden_dim, 4)
 
         # output positional encodings (object queries)
-        self.query_pos = nn.Parameter(torch.rand(100, hidden_dim))
+        self.query_pos = nn.Parameter(torch.rand(row_qr + col_qr, hidden_dim))
 
         # spatial positional encodings
         # note that in baseline DETR we use sine positional encodings
-        self.row_embed = nn.Parameter(torch.rand(50, hidden_dim // 2))
-        self.col_embed = nn.Parameter(torch.rand(50, hidden_dim // 2))
+        self.row_embed = nn.Parameter(torch.rand(row_qr, hidden_dim // 2))
+        self.col_embed = nn.Parameter(torch.rand(col_qr, hidden_dim // 2))
 
     def forward(self, inputs):
         # propagate inputs through ResNet-50 up to avg-pool layer
@@ -461,7 +467,7 @@ class DETRdemo(nn.Module):
         x = self.backbone.layer4(x)
 
         # convert from 2048 to 256 feature planes for the transformer
-        h = self.conv(x)
+        h = self.conv(x) # (1, 256, 10, 18) for inputs (1,3,320,576)
 
         # construct positional encodings
         H, W = h.shape[-2:]
@@ -471,7 +477,7 @@ class DETRdemo(nn.Module):
         ], dim=-1).flatten(0, 1).unsqueeze(1)
 
         # propagate through the transformer
-        h = self.transformer(,
+        h = self.transformer(pos + 0.1 * h.flatten(2).permute(2, 0, 1),
                              self.query_pos.unsqueeze(1)).transpose(0, 1)
         
         # finally project transformer outputs to class labels and bounding boxes

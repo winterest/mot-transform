@@ -117,7 +117,7 @@ class YOLOLayer(nn.Module):
         self.layer = yolo_layer
         nA = len(anchors)
         self.anchors = torch.FloatTensor(anchors)
-        self.nA = nA  # number of anchors (3)
+        self.nA = nA  # number of anchors (4)
         self.nC = nC  # number of classes (80)
         self.nID = nID # number of identities
         self.img_size = 0
@@ -151,7 +151,7 @@ class YOLOLayer(nn.Module):
         
         p_emb = p_emb.permute(0,2,3,1).contiguous()
         p_box = p[..., :4]
-        p_conf = p[..., 4:6].permute(0, 4, 1, 2, 3)  # Conf
+        p_conf = p[..., 4:6].permute(0, 4, 1, 2, 3)  # Conf  (nB, 2, nA, nGh, nGw)
 
         # Training
         if targets is not None:
@@ -164,13 +164,15 @@ class YOLOLayer(nn.Module):
 
             # Compute losses
             nT = sum([len(x) for x in targets])  # number of targets
-            nM = mask.sum().float()  # number of anchors (assigned to targets)
-            nP = torch.ones_like(mask).sum().float()
+            nM = mask.sum().float()  # number of POSITIVE anchors (assigned to targets) 
+            nP = torch.ones_like(mask).sum().float() 
+            #### if there is no (*POSITIVE) mask, loss of box is ZERO
+            #### else, compute loss of box by p_box and tbox
             if nM > 0:
                 lbox = self.SmoothL1Loss(p_box[mask], tbox[mask])
             else:
                 FT = torch.cuda.FloatTensor if p_conf.is_cuda else torch.FloatTensor
-                lbox, lconf =  FT([0]), FT([0])
+                lbox, lconf =  FT([0]), FT([0]) 
             lconf =  self.SoftmaxLoss(p_conf, tconf)
             lid = torch.Tensor(1).fill_(0).squeeze().cuda()
             emb_mask,_ = mask.max(1)
@@ -249,7 +251,7 @@ class Darknet(nn.Module):
         layer_outputs = []
         output = []
 
-        for i, (module_def, module) in enumerate(zip(self.module_defs, self.module_list)):
+        for i_layer, (module_def, module) in enumerate(zip(self.module_defs, self.module_list)):
             mtype = module_def['type']
             if mtype in ['convolutional', 'upsample', 'maxpool']:
                 x = module(x)

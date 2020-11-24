@@ -323,7 +323,7 @@ def build_targets_thres(target, anchor_wh, nA, nC, nGh, nGw):
     tid = torch.LongTensor(nB, nA, nGh, nGw, 1).fill_(-1).cuda() 
     for b in range(nB):
         t = target[b]
-        t_id = t[:, 1].clone().long().cuda()
+        t_id = t[:, 1].clone().long().cuda() # targets is: [cls, ID, x, y, w, h]
         t = t[:,[0,2,3,4,5]]
         nTb = len(t)  # number of targets
         if nTb == 0:

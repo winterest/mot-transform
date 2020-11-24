@@ -29,6 +29,7 @@ def train(
         opt=None,
 ):
     # The function starts
+    NUM_WORKERS = opt.num_workers
 
     timme = strftime("%Y-%d-%m %H:%M:%S", gmtime())
     timme = timme[5:-3].replace('-', '_')
@@ -53,7 +54,7 @@ def train(
     # Get dataloader
     dataset = JointDataset(dataset_root, trainset_paths, img_size, augment=True, transforms=transforms)
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True,
-                                             num_workers=0, pin_memory=True, drop_last=True, collate_fn=collate_fn)
+                                             num_workers=NUM_WORKERS, pin_memory=True, drop_last=True, collate_fn=collate_fn)
     # Initialize model
     model = Darknet(cfg, dataset.nID)
 
@@ -191,7 +192,8 @@ def train(
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', type=int, default=30, help='number of epochs')
-    parser.add_argument('--batch-size', type=int, default=8, help='size of each image batch')
+    parser.add_argument('--num-workers', type=int, default=0, help='number of workers')
+    parser.add_argument('--batch-size', type=int, default=1, help='size of each image batch')
     parser.add_argument('--accumulated-batches', type=int, default=1, help='number of batches before optimizer step')
     parser.add_argument('--cfg', type=str, default='cfg/yolov3_576x320.cfg', help='cfg file path')
     parser.add_argument('--weights-from', type=str, default='weights/',
@@ -207,7 +209,7 @@ if __name__ == '__main__':
     parser.add_argument('--resume', action='store_true', help='resume training flag')
     parser.add_argument('--print-interval', type=int, default=40, help='print interval')
     parser.add_argument('--test-interval', type=int, default=9, help='test interval')
-    parser.add_argument('--lr', type=float, default=1e-2, help='init lr')
+    parser.add_argument('--lr', type=float, default=1e-3, help='init lr')
     parser.add_argument('--unfreeze-bn', action='store_true', help='unfreeze bn')
     opt = parser.parse_args()
 
