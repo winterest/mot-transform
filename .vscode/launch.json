@@ -11,7 +11,7 @@
             "program": "${workspaceFolder}/train.py",
             "console": "integratedTerminal",
             "env": { "CUDA_VISIBLE_DEVICES": "0"},
-            "args": ["--batch-size", "1"]
+            "args": []
         },
 
         {
