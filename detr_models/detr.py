@@ -310,6 +310,17 @@ def build(args):
     # you should pass `num_classes` to be 2 (max_obj_id + 1).
     # For more details on this, check the following discussion
     # https://github.com/facebookresearch/detr/issues/108#issuecomment-650269223
+
+
+
+    #### args:
+    #### dataset_file, device, num_queries, aux_loss, masks, frozen_weights, 
+    #### bbox_loss_coef, giou_loss_coef, mask_loss_coef, dice_loss_coef, 
+    #### dec_layers, eos_coef, 
+
+    #### args reused:
+    #### build_backbone, build_transformer, build_matcher
+    
     num_classes = 20 if args.dataset_file != 'coco' else 91
     if args.dataset_file == "coco_panoptic":
         # for panoptic, we just add a num_classes that is large enough to hold
