@@ -15,7 +15,7 @@ from collections import defaultdict
 
 from detr_models import build_model
 
-def build_detr(args)
+def build_detr(args):
     from config import 
     #### args:
     #### dataset_file, device, num_queries, aux_loss, masks, frozen_weights, 
