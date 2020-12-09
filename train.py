@@ -16,7 +16,7 @@ from collections import defaultdict
 from detr_models import build_model
 
 def build_detr(args):
-    from config import 
+    #from config import 
     #### args:
     #### dataset_file, device, num_queries, aux_loss, masks, frozen_weights, 
     #### bbox_loss_coef, giou_loss_coef, mask_loss_coef, dice_loss_coef, 
